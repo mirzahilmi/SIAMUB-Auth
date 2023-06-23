@@ -17,6 +17,7 @@ class SIAMUBAuth
 
 	public $information;
 
+	// Private constructor to prevent object creation with "new"
 	private function __construct()
 	{
 	}
@@ -44,37 +45,45 @@ class SIAMUBAuth
 
 		if (!isset($res->getHeader('Set-Cookie')[0])) throw new Exception('Failed to retrieve Token from Cookie. The "Set-Cookie" header is not present.');
 
-		return $res->getHeader('Set-Cookie')[0];
+		return strstr($res->getHeader('Set-Cookie')[0], ';', true);
 	}
 
-	public function auth(string $nim, string $password)
+	public function auth(string $nim, string $password): void
 	{
 		if (empty($nim) || empty($password)) throw new Exception('Could not authenticate. Empty NIM or Password!');
 
 		$headers = [
-			'Cookie' => 'PHPSESSID=riqd29ioeelai8vbs3h8ek9ta2',
+			'Cookie' => $this->token,
 			'Content-Type' => 'application/x-www-form-urlencoded'
 		];
 
 		$res = self::$client->post(WEB_INDEX, [
+			'headers' => [
+				'Cookie' => $this->getCookieToken(),
+				'Content-Type' => 'application/x-www-form-urlencoded'
+			],
 			'form_params' => [
 				'username' => $nim,
 				'password' => $password,
 				'login' => 'Masuk'
 			]
 		]);
-
-		$html = $res->getBody()->getContents();
+		
+		// Verify Authentication Attempt
+		$status = $this->extractValue($res->getBody()->getContents(), STATUS_XPATH);
+		if (!empty($status)) throw new Exception('Invalid NIM or Password Credentials!');
+	}
+	
+	private function extractValue(string $content, string $pattern): string
+	{
+		$doc = new DOMDocument();
+		$doc->loadHTML($content);
+		
+		$xpath = new DOMXPath($doc);
 
 		// HTML is often wonky, this suppresses a lot of warnings
 		libxml_use_internal_errors(true);
 
-		$doc = new DOMDocument();
-		$doc->loadHTML($html);
-
-		$xpath = new DOMXPath($doc);
-
-		$status = $xpath->evaluate("//small[contains(@class, 'error-code')]")[0];
-		if (!empty($status)) throw new Exception('Invalid NIM or Password Credentials!');
+		return $xpath->query($pattern);
 	}
 }

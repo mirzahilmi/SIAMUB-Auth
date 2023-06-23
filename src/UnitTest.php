@@ -5,4 +5,4 @@ use MirzaHilmi\SIAMUBAuth;
 
 $user = SIAMUBAuth::authenticate('2345667283578', 'abdultokum');
 
-echo $auth->information;
+echo $auth->information['nama'];

@@ -24,10 +24,7 @@
       "email": "exquisitemirza@student.ub.ac.id"
     }
   ],
-  "minimum-stability": "stable",
-  "require-dev": {
-    "guzzlehttp/guzzle": "^7.7"
-  },
+  "minimum-stability": "dev",
   "support": {
     "email": "exquisitemirza@student.ub.ac.id",
     "issues": "https://github.com/MirzaHilmi/SIAMUB-Auth/issues",

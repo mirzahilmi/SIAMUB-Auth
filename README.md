@@ -39,8 +39,10 @@ composer require mirzahilmi/siamub-auth
 ```php
 <?php
 use MirzaHilmi\SIAMUBAuth;
+use GuzzleHttp\Client;
 
-$user = SIAMUBAuth::authenticate('22515xxxxxxxxxx', 'xxxxxxxx');
+$client = new Client();
+$user = SIAMUBAuth::authenticate('22515xxxxxxxxxx', 'xxxxxxxx', $client);
 ```
 2. Retrieve user information:
 ```php
@@ -66,4 +68,4 @@ echo $data['status']; // true
 Contributions to this project are welcome. If you encounter any issues or have ideas for improvements, feel free to open an issue or submit a pull request.
 
 ## License
-This project is licensed under the [GPL-3.0 License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).

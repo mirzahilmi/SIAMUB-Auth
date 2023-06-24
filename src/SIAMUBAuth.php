@@ -17,7 +17,7 @@ class SIAMUBAuth
 	private string $bodyContent;
 
 	// Accessible User Field
-	public array $information;
+	private array $information;
 
 	// Private constructor to prevent object creation with "new" keyword
 	private function __construct()
@@ -113,5 +113,10 @@ class SIAMUBAuth
 		if (!$elements || $elements->length === 0) return '';
 
 		return trim($elements[0]->nodeValue);
+	}
+
+	public function getInformation(): array
+	{
+		return $this->information;
 	}
 }

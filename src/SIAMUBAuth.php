@@ -6,7 +6,6 @@ require __DIR__ . '/../vendor/autoload.php';
 require 'config.php';
 
 use DOMDocument;
-use DOMNode;
 use DOMXPath;
 use Exception;
 use GuzzleHttp\Client;
@@ -17,9 +16,10 @@ class SIAMUBAuth
 	private string $token;
 	private string $bodyContent;
 
+	// Accessible User Field
 	public array $information;
 
-	// Private constructor to prevent object creation with "new"
+	// Private constructor to prevent object creation with "new" keyword
 	private function __construct()
 	{
 	}
@@ -32,7 +32,8 @@ class SIAMUBAuth
 			$user = new self();
 
 			$user->token = $user->getCookieToken();
-			$user->auth($nim, $password);
+			$content = $user->auth($nim, $password);
+			$user->populate($content);
 
 			return $user;
 		} catch (Exception $e) {
@@ -50,18 +51,13 @@ class SIAMUBAuth
 		return strstr($res->getHeader('Set-Cookie')[0], ';', true);
 	}
 
-	public function auth(string $nim, string $password): void
+	public function auth(string $nim, string $password): string
 	{
 		if (empty($nim) || empty($password)) throw new Exception('Could not authenticate. Empty NIM or Password!');
 
-		$headers = [
-			'Cookie' => $this->token,
-			'Content-Type' => 'application/x-www-form-urlencoded'
-		];
-
 		$res = self::$client->post(WEB_INDEX, [
 			'headers' => [
-				'Cookie' => $this->getCookieToken(),
+				'Cookie' => $this->token,
 				'Content-Type' => 'application/x-www-form-urlencoded'
 			],
 			'form_params' => [
@@ -73,34 +69,49 @@ class SIAMUBAuth
 		$content = trim($res->getBody()->getContents());
 
 		// Verify Authentication Attempt
-		$status = $this->extractValue($content, STATUS_XPATH);
+		$status = $this->extractContent($content, STATUS_XPATH);
 		if (!empty($status)) throw new Exception('Invalid NIM or Password Credentials!');
 
-		$this->populate($content);
+		return $content;
 	}
 
-	// $keyNames = ['nim', 'nama', 'jenjang', 'fakultas', 'jurusan', 'program_studi', 'seleksi', 'nomor_ujian', 'status'];
 	private function populate(string $body): void
 	{
-		$datas = $this->extractValue($body, CONTENT_XPATH);
+		$contents = $this->extractContent($body, CONTENT_XPATH);
+		$datas = preg_split('/\s{2,}/', $contents);
+
+		$take = function (string $str): string {
+			return str_replace(': ', '', strstr($str, ':'));
+		};
+
+		$jenjang = explode('/', $take($datas[3]));
 
 		$this->information = [
-			'nim' => $datas[1],
-			'nama' => $datas[2],
-			'jenjang' => $datas[3],
-			'fakultas' => $datas[4],
-			'jurusan' => $datas[5],
-			// 'program_studi' => $datas[6],
-			// 'seleksi' => $datas[7],
-			// 'nomor_ujian' => $datas[8],
-			// 'status' => $datas[9],
+			'nim' => $datas[0],
+			'nama' => $datas[1],
+			'jenjang' => $jenjang[0],
+			'fakultas' => $jenjang[1],
+			'jurusan' => $take($datas[4]),
+			'program_studi' => $take($datas[5]),
+			'seleksi' => $take($datas[6]),
+			'nomor_ujian' => $take($datas[7]),
+			'status' => $take($datas[8]) == 'Aktif' ? true : false,
 		];
 	}
 
-	private function extractValue(string $content, string $pattern): string|array
+	private function extractContent(string $content, string $regex): string
 	{
-		$matches = '';
-		preg_match($pattern, $content, $matches);
-		return $matches;
+		// Supress document warnings
+		libxml_use_internal_errors(true);
+
+		$dom = new DOMDocument();
+		$dom->loadHTML($content);
+
+		$xpath = new DOMXPath($dom);
+
+		$elements = $xpath->query($regex);
+		if (!$elements || $elements->length === 0) return '';
+
+		return trim($elements[0]->nodeValue);
 	}
 }

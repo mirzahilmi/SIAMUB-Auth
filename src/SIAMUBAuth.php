@@ -3,7 +3,7 @@
 namespace MirzaHilmi;
 
 require __DIR__ . '/../vendor/autoload.php';
-require 'config.php';
+require 'Config.php';
 
 use DOMDocument;
 use DOMXPath;
@@ -14,7 +14,6 @@ class SIAMUBAuth
 {
 	private static Client $client;
 	private string $token;
-	private string $bodyContent;
 
 	// Accessible User Field
 	private array $information;
@@ -24,9 +23,9 @@ class SIAMUBAuth
 	{
 	}
 
-	public static function authenticate(string $nim, string $password): ?SIAMUBAuth
+	public static function authenticate(string $nim, string $password, Client $client): ?SIAMUBAuth
 	{
-		self::$client = new Client();
+		self::$client = $client;
 
 		try {
 			$user = new self();

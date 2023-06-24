@@ -24,7 +24,7 @@
       "email": "exquisitemirza@student.ub.ac.id"
     }
   ],
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "require-dev": {
     "guzzlehttp/guzzle": "^7.7"
   },

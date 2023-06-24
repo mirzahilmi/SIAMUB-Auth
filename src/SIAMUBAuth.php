@@ -33,11 +33,10 @@ class SIAMUBAuth
 
 			$user->token = $user->getCookieToken();
 			$user->auth($nim, $password);
-			$user->populate();
 
 			return $user;
 		} catch (Exception $e) {
-			error_log('Error: ', $e->getMessage());
+			error_log('Error: ' . $e->getMessage());
 			return null;
 		}
 	}
@@ -71,60 +70,37 @@ class SIAMUBAuth
 				'login' => 'Masuk'
 			]
 		]);
-		$content = $res->getBody()->getContents();
+		$content = trim($res->getBody()->getContents());
 
 		// Verify Authentication Attempt
 		$status = $this->extractValue($content, STATUS_XPATH);
 		if (!empty($status)) throw new Exception('Invalid NIM or Password Credentials!');
 
-		$this->bodyContent = $content;
+		$this->populate($content);
 	}
 
 	// $keyNames = ['nim', 'nama', 'jenjang', 'fakultas', 'jurusan', 'program_studi', 'seleksi', 'nomor_ujian', 'status'];
-	private function populate(): void
+	private function populate(string $body): void
 	{
-		$values = $this->extractValue($this->bodyContent, [CONTENT_XPATH[0], CONTENT_XPATH[1], CONTENT_XPATH[2]]);
+		$datas = $this->extractValue($body, CONTENT_XPATH);
 
-		$this->information = ['nim' => $values[0], 'nama' => $values[1]];
-
-		$elementStr = $this->extractValue($this->bodyContent, PARENT);
-		$inner = explode('<br>', $elementStr);
-
-		echo $inner;
+		$this->information = [
+			'nim' => $datas[1],
+			'nama' => $datas[2],
+			'jenjang' => $datas[3],
+			'fakultas' => $datas[4],
+			'jurusan' => $datas[5],
+			// 'program_studi' => $datas[6],
+			// 'seleksi' => $datas[7],
+			// 'nomor_ujian' => $datas[8],
+			// 'status' => $datas[9],
+		];
 	}
 
-	private function extractValue(string $content, string|array $patterns): string|array
+	private function extractValue(string $content, string $pattern): string|array
 	{
-		// HTML is often wonky, this suppresses a lot of warnings
-		libxml_use_internal_errors(true);
-
-		$doc = new DOMDocument();
-		$doc->loadHTML($content);
-
-		$xpath = new DOMXPath($doc);
-
-		if (!is_array($patterns)) {
-			return $this->innerHTML($xpath->query($patterns[0])[0]);
-		}
-
-		$arr = [];
-		$i = 0;
-		foreach ($patterns as $pattern) {
-			$arr[] = $this->innerHTML($xpath->query($pattern)[$i]);
-		}
-
-		return $arr;
-	}
-
-	private function innerHTML(DOMNode $element): string
-	{
-		$innerHTML = "";
-		$children  = $element->childNodes;
-
-		foreach ($children as $child) {
-			$innerHTML .= $element->ownerDocument->saveHTML($child);
-		}
-
-		return $innerHTML;
+		$matches = '';
+		preg_match($pattern, $content, $matches);
+		return $matches;
 	}
 }

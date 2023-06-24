@@ -1,0 +1,4 @@
+*-sample.html
+/vendor
+composer.lock
+/test

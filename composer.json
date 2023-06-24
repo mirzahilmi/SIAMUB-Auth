@@ -3,6 +3,7 @@
     "description": "MirzaHilmi/SIAMUB-Auth is a PHP Composer package designed for educational purposes. It allows you to authenticate and retrieve information from the SIAM UB Authentication system, a web authentication system used by college. This package utilizes web scraping techniques and the Guzzle HTTP library to automate the retrieval of data. Please note that this package should only be used responsibly and with proper authorization.",
     "type": "library",
     "require": {
+        "php": "^7.2.5 || ^8.0",
         "guzzlehttp/guzzle": "7.7.x-dev"
     },
     "require-dev": {

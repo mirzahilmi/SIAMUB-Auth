@@ -92,7 +92,7 @@ class SIAMUBAuth
      * @return string The authentication response body.
      * @throws Exception If the authentication fails.
      */
-    public function auth(string $nim, string $password): string
+    private function auth(string $nim, string $password): string
     {
         if (empty($nim) || empty($password)) {
             throw new Exception('Could not authenticate. Empty NIM or Password!');

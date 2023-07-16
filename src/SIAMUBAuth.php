@@ -8,6 +8,7 @@ use DOMDocument;
 use DOMXPath;
 use Exception;
 use GuzzleHttp\Client;
+use MirzaHilmi\Models\Mahasiswa;
 
 /**
  * Class SIAMUBAuth
@@ -24,16 +25,6 @@ class SIAMUBAuth
     private static Client $client;
 
     /**
-     * @var string The authentication token.
-     */
-    private string $token;
-
-    /**
-     * @var array The user information.
-     */
-    private array $information;
-
-    /**
      * SIAMUBAuth constructor.
      *
      * Private constructor to prevent object creation with the "new" keyword.
@@ -48,23 +39,22 @@ class SIAMUBAuth
      * @param string $nim The user's NIM (Nomor Induk Mahasiswa).
      * @param string $password The user's password.
      * @param Client $client The GuzzleHttp client instance.
-     * @return SIAMUBAuth|null The authenticated SIAMUBAuth instance or null on failure.
+     * @return Mahasiswa|null The authenticated SIAMUBAuth instance or null on failure.
      */
-    public static function authenticate(string $nim, string $password, Client $client): ?SIAMUBAuth
+    public static function authenticate(string $nim, string $password, Client $client): ?Mahasiswa
     {
         self::$client = $client;
 
         try {
-            $user = new self();
+            $token = self::getCookieToken();
+            $content = self::auth($nim, $password, $token);
+            self::invalidate($token);
+            $datas = self::process($content);
 
-            $user->token = $user->getCookieToken();
-            $content = $user->auth($nim, $password);
-            $user->invalidate();
-            $user->populate($content);
-
-            return $user;
+            return new Mahasiswa($datas);
         } catch (Exception $e) {
-            $user->invalidate();
+
+            self::invalidate($token);
             error_log('Error: ' . $e->getMessage());
             return null;
         }
@@ -76,7 +66,7 @@ class SIAMUBAuth
      * @return string The extracted cookie token.
      * @throws Exception If the token cannot be retrieved.
      */
-    private function getCookieToken(): string
+    private static function getCookieToken(): string
     {
         $res = self::$client->head(BASE_URI, ['timeout' => 15]);
 
@@ -95,7 +85,7 @@ class SIAMUBAuth
      * @return string The authentication response body.
      * @throws Exception If the authentication fails.
      */
-    public function auth(string $nim, string $password): string
+    private static function auth(string $nim, string $password, string $token): string
     {
         if (empty($nim) || empty($password)) {
             throw new Exception('Could not authenticate. Empty NIM or Password!');
@@ -103,7 +93,7 @@ class SIAMUBAuth
 
         $res = self::$client->post(BASE_URI . '/index.php', [
             'headers' => [
-                'Cookie' => $this->token,
+                'Cookie' => $token,
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ],
             'form_params' => [
@@ -116,38 +106,12 @@ class SIAMUBAuth
         $content = trim($res->getBody()->getContents());
 
         // Verify Authentication Attempt
-        $status = $this->extractContent($content, STATUS_XPATH);
+        $status = self::extractContent($content, STATUS_XPATH);
         if (!empty($status)) {
             throw new Exception('Invalid NIM or Password Credentials!');
         }
 
         return $content;
-    }
-
-    /**
-     * Populate the user information from the response body.
-     *
-     * @param string $body The response body.
-     * @return void
-     */
-    private function populate(string $body): void
-    {
-        $contents = $this->extractContent($body, CONTENT_XPATH);
-        $datas = preg_split('/\s{2,}/', $contents);
-
-        $jenjang = explode('/', str_replace('Jenjang/Fakultas', '', $datas[2]));
-
-        $this->information = [
-            'nim' => $datas[0],
-            'nama' => $datas[1],
-            'jenjang' => $jenjang[0],
-            'fakultas' => $jenjang[1],
-            'jurusan' => str_replace('Jurusan', '', $datas[3]),
-            'program_studi' => str_replace('Program Studi', '', $datas[4]),
-            'seleksi' => substr_replace($datas[5], '', strpos($datas[5], 'Seleksi'), strlen('Seleksi')),
-            'nomor_ujian' => preg_replace('/\D/', '', $datas[6]),
-            'status' => str_replace('Status : ', '', $datas[7]) == 'Aktif' ? true : false,
-        ];
     }
 
     /**
@@ -157,7 +121,7 @@ class SIAMUBAuth
      * @param string $regex The XPath expression.
      * @return string The extracted content.
      */
-    private function extractContent(string $content, string $regex): string
+    private static function extractContent(string $content, string $regex): string
     {
         // Suppress document warnings
         libxml_use_internal_errors(true);
@@ -176,25 +140,29 @@ class SIAMUBAuth
     }
 
     /**
+     * Process the extracted content and get the data.
+     *
+     * @param string $body The response body.
+     * @return array
+     */
+    private static function process(string $body): array
+    {
+        $contents = self::extractContent($body, CONTENT_XPATH);
+        $datas = preg_split('/\s{2,}/', $contents);
+
+        return $datas;
+    }
+
+    /**
      * Invalidate session key for security reason.
      *
      * @return void
      */
-    private function invalidate(): void
+    private static function invalidate($token): void
     {
         self::$client->get(BASE_URI . '/logout.php', [
-            'headers' => ['Cookie' => $this->token],
+            'headers' => ['Cookie' => $token],
             'timeout' => 15
         ]);
-    }
-
-    /**
-     * Get the user information.
-     *
-     * @return array The user information.
-     */
-    public function getInformation(): array
-    {
-        return $this->information;
     }
 }

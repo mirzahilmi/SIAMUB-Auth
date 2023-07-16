@@ -5,6 +5,7 @@ namespace MirzaHilmi;
 require_once 'Config.php';
 
 use DOMDocument;
+use DOMNode;
 use DOMXPath;
 use Exception;
 use GuzzleHttp\Client;
@@ -107,36 +108,11 @@ class SIAMUBAuth
 
         // Verify Authentication Attempt
         $status = self::extractContent($content, STATUS_XPATH);
-        if (!empty($status)) {
+        if ($status !== null) {
             throw new Exception('Invalid NIM or Password Credentials!');
         }
 
         return $content;
-    }
-
-    /**
-     * Extract the content from the response body using XPath.
-     *
-     * @param string $content The response body.
-     * @param string $regex The XPath expression.
-     * @return string The extracted content.
-     */
-    private static function extractContent(string $content, string $regex): string
-    {
-        // Suppress document warnings
-        libxml_use_internal_errors(true);
-
-        $dom = new DOMDocument();
-        $dom->loadHTML($content);
-
-        $xpath = new DOMXPath($dom);
-
-        $elements = $xpath->query($regex);
-        if (!$elements || $elements->length === 0) {
-            return '';
-        }
-
-        return trim($elements[0]->nodeValue);
     }
 
     /**
@@ -148,9 +124,38 @@ class SIAMUBAuth
     private static function process(string $body): array
     {
         $contents = self::extractContent($body, CONTENT_XPATH);
-        $datas = preg_split('/\s{2,}/', $contents);
+        $datas = preg_split('/\s{2,}/', trim($contents->nodeValue));
+        $photoNode = self::extractContent($body, PHOTO_XPATH);
 
+        if ($photoNode === null) return $datas;
+        
+        $datas[] = $photoNode->attributes->getNamedItem('style')->nodeValue;
         return $datas;
+    }
+
+    /**
+     * Extract the content from the response body using XPath.
+     *
+     * @param string $content The response body.
+     * @param string $regex The XPath expression.
+     * @return DOMNode|null The extracted content.
+     */
+    private static function extractContent(string $content, string $regex): DOMNode|null
+    {
+        // Suppress document warnings
+        libxml_use_internal_errors(true);
+
+        $dom = new DOMDocument();
+        $dom->loadHTML($content);
+
+        $xpath = new DOMXPath($dom);
+
+        $elements = $xpath->query($regex);
+        if (!$elements || $elements->length === 0) {
+            return null;
+        }
+
+        return $elements->item(0);
     }
 
     /**

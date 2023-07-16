@@ -45,6 +45,13 @@ class Mahasiswa
 	{
 		$this->nim = $raw[0];
 
+		if (isset($raw[8])) {
+			preg_match('/url\((.*?)\)/', $raw[8], $match);
+			$this->pasFoto = $match[1];
+		} else {
+			$this->pasFoto = sprintf("https://siakad.ub.ac.id/dirfoto/foto/foto_20%s/%s.jpg", substr($this->nim, 0, 2), $this->nim);
+		}
+
 		$this->nama = $raw[1];
 
 		$jenjangFakultas = explode('/', str_replace('Jenjang/Fakultas', '', $raw[2]));

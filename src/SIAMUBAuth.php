@@ -128,7 +128,7 @@ class SIAMUBAuth
         $photoNode = self::extractContent($body, PHOTO_XPATH);
 
         if ($photoNode === null) return $datas;
-        
+
         $datas[] = $photoNode->attributes->getNamedItem('style')->nodeValue;
         return $datas;
     }

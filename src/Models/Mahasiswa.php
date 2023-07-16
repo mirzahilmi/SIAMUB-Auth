@@ -2,6 +2,21 @@
 
 namespace MirzaHilmi\Models;
 
+/**
+ * Mahasiswa Class
+ * 
+ * @property string $pasFoto
+ * @property string $nim
+ * @property string $nama
+ * @property string $jenjang
+ * @property string $fakultas
+ * @property string $departemen
+ * @property string $jurusan
+ * @property string $programStudi
+ * @property string $seleksi
+ * @property string $nomorUjian
+ * @property bool $status
+ */
 class Mahasiswa
 {
 	public string $pasFoto;
@@ -21,6 +36,11 @@ class Mahasiswa
 		$this->populate($data);
 	}
 
+	/**
+	 * Populate the Mahasiswa object with data.
+	 *
+	 * @param array $raw The raw data.
+	 */
 	private function populate(array $raw): void
 	{
 		$this->nim = $raw[0];
@@ -44,6 +64,12 @@ class Mahasiswa
 		$this->status = trim(str_replace('Status : ', '', $raw[7]));
 	}
 
+	/**
+	 * Determine the department based on the major.
+	 *
+	 * @param string $major The student's major.
+	 * @return string The determined department.
+	 */
 	private function determineDepartment(string $major): string
 	{
 		switch ($major) {

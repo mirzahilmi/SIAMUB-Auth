@@ -1,4 +1,5 @@
 <?php
+
 namespace MirzaHilmi;
 
 require_once 'Config.php';
@@ -58,10 +59,12 @@ class SIAMUBAuth
 
             $user->token = $user->getCookieToken();
             $content = $user->auth($nim, $password);
+            $user->invalidate();
             $user->populate($content);
 
             return $user;
         } catch (Exception $e) {
+            $user->invalidate();
             error_log('Error: ' . $e->getMessage());
             return null;
         }
@@ -75,7 +78,7 @@ class SIAMUBAuth
      */
     private function getCookieToken(): string
     {
-        $res = self::$client->head(WEB_URL);
+        $res = self::$client->head(BASE_URI, ['timeout' => 15]);
 
         if (!isset($res->getHeader('Set-Cookie')[0])) {
             throw new Exception('Failed to retrieve Token from Cookie. The "Set-Cookie" header is not present.');
@@ -98,7 +101,7 @@ class SIAMUBAuth
             throw new Exception('Could not authenticate. Empty NIM or Password!');
         }
 
-        $res = self::$client->post(WEB_INDEX, [
+        $res = self::$client->post(BASE_URI . '/index.php', [
             'headers' => [
                 'Cookie' => $this->token,
                 'Content-Type' => 'application/x-www-form-urlencoded',
@@ -108,6 +111,7 @@ class SIAMUBAuth
                 'password' => $password,
                 'login' => 'Masuk',
             ],
+            'timeout' => 15
         ]);
         $content = trim($res->getBody()->getContents());
 
@@ -131,22 +135,18 @@ class SIAMUBAuth
         $contents = $this->extractContent($body, CONTENT_XPATH);
         $datas = preg_split('/\s{2,}/', $contents);
 
-        $take = function (string $str): string {
-            return str_replace(': ', '', strstr($str, ':'));
-        };
-
-        $jenjang = explode('/', $take($datas[3]));
+        $jenjang = explode('/', str_replace('Jenjang/Fakultas', '', $datas[2]));
 
         $this->information = [
             'nim' => $datas[0],
             'nama' => $datas[1],
             'jenjang' => $jenjang[0],
             'fakultas' => $jenjang[1],
-            'jurusan' => $take($datas[4]),
-            'program_studi' => $take($datas[5]),
-            'seleksi' => $take($datas[6]),
-            'nomor_ujian' => $take($datas[7]),
-            'status' => $take($datas[8]) == 'Aktif' ? true : false,
+            'jurusan' => str_replace('Jurusan', '', $datas[3]),
+            'program_studi' => str_replace('Program Studi', '', $datas[4]),
+            'seleksi' => substr_replace($datas[5], '', strpos($datas[5], 'Seleksi'), strlen('Seleksi')),
+            'nomor_ujian' => preg_replace('/\D/', '', $datas[6]),
+            'status' => str_replace('Status : ', '', $datas[7]) == 'Aktif' ? true : false,
         ];
     }
 
@@ -173,6 +173,19 @@ class SIAMUBAuth
         }
 
         return trim($elements[0]->nodeValue);
+    }
+
+    /**
+     * Invalidate session key for security reason.
+     *
+     * @return void
+     */
+    private function invalidate(): void
+    {
+        self::$client->get(BASE_URI . '/logout.php', [
+            'headers' => ['Cookie' => $this->token],
+            'timeout' => 15
+        ]);
     }
 
     /**

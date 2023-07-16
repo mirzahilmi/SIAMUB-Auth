@@ -19,7 +19,7 @@ The SIAM UB Authentication project aims to retrieve information from the SIAM UB
 
 ## Features
 ✅ Login to the SIAM UB Authentication system using provided credentials. <br>
-✅ Scrape user information, such as name, nim, department and others, from the authenticated user profile. <br>
+✅ Scrape user information, such as name, nim, department, profile picture and others, from the authenticated user profile. <br>
 ⬜ Retrieve course information, including course codes, names, and schedules. **Not supported yet.**
 
 ## Requirements
@@ -35,7 +35,7 @@ composer require mirzahilmi/siamub-auth
 ```
 
 ## Usage
-1. Import and Instantiate the SIAMUBAuth class with your credentials:
+1. Authenticate with user credentials using SIAMUBAuth::authenticate() method:
 ```php
 <?php
 use MirzaHilmi\SIAMUBAuth;
@@ -43,23 +43,25 @@ use GuzzleHttp\Client;
 
 $client = new Client();
 $user = SIAMUBAuth::authenticate('22515xxxxxxxxxx', 'xxxxxxxx', $client);
+echo get_class($user); // MirzaHilmi\Models\Mahasiswa
 ```
-2. Retrieve user information:
+2. Get user information:
 ```php
-$data = $user->getInformation();
-echo $data['nim']; // 22515xxxxxxxxxx
+echo $user->nim; // 22515xxxxxxxxxx
 ```
 3. Available user informations:
 ```php
-echo $data['nim']; // 22515xxxxxxxxxx
-echo $data['nama']; // Pemuja GKM
-echo $data['jenjang']; // S1
-echo $data['fakultas']; // Ilmu Komputer
-echo $data['jurusan']; // Teknologi Informasi
-echo $data['program_studi']; // Teknologi Informasi
-echo $data['seleksi']; // Mandiri
-echo $data['nomor_ujian']; // 123456789
-echo $data['status']; // true
+echo $user->pasFoto; // https://admisi.ub.ac.id/upload/**/*.jpg
+echo $user->nim; // 22515xxxxxxxxxx
+echo $user->nama; // Pemuja GKM
+echo $user->jenjang; // S1
+echo $user->fakultas; // Ilmu Komputer
+echo $user->departemen; // Sistem Informasi
+echo $user->jurusan; // Teknologi Informasi
+echo $user->programStudi; // Teknologi Informasi
+echo $user->seleksi; // Seleksi Mandiri Brawijaya - xxxxx
+echo $user->nomorUjian; // 123456789
+echo $user->status; // 1
 ```
 
 **Important:** Remember to use this project responsibly and only on systems for which you have proper authorization.

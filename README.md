@@ -19,7 +19,7 @@ The SIAM UB Authentication project aims to retrieve information from the SIAM UB
 
 ## Features
 ✅ Login to the SIAM UB Authentication system using provided credentials. <br>
-✅ Scrape user information, such as name, nim, department and others, from the authenticated user profile. <br>
+✅ Scrape user information, such as name, nim, department, profile picture and others, from the authenticated user profile. <br>
 ⬜ Retrieve course information, including course codes, names, and schedules. **Not supported yet.**
 
 ## Requirements
@@ -35,7 +35,7 @@ composer require mirzahilmi/siamub-auth
 ```
 
 ## Usage
-1. Import and Instantiate the SIAMUBAuth class with your credentials:
+1. Authenticate with user credentials using SIAMUBAuth::authenticate() method:
 ```php
 <?php
 use MirzaHilmi\SIAMUBAuth;
@@ -43,10 +43,11 @@ use GuzzleHttp\Client;
 
 $client = new Client();
 $user = SIAMUBAuth::authenticate('22515xxxxxxxxxx', 'xxxxxxxx', $client);
+echo get_class($user); // MirzaHilmi\Models\Mahasiswa
 ```
-2. Retrieve user information:
+2. Get user information:
 ```php
-echo $data['nim']; // 22515xxxxxxxxxx
+echo $user->nim; // 22515xxxxxxxxxx
 ```
 3. Available user informations:
 ```php

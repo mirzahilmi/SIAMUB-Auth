@@ -19,17 +19,17 @@ namespace MirzaHilmi\Models;
  */
 class Mahasiswa
 {
-	public string $pasFoto;
-	public string $nim;
-	public string $nama;
-	public string $jenjang;
-	public string $fakultas;
-	public string $departemen;
-	public string $jurusan;
-	public string $programStudi;
-	public string $seleksi;
-	public string $nomorUjian;
-	public bool $status;
+	public $pasFoto;
+	public $nim;
+	public $nama;
+	public $jenjang;
+	public $fakultas;
+	public $departemen;
+	public $jurusan;
+	public $programStudi;
+	public $seleksi;
+	public $nomorUjian;
+	public $status;
 
 	public function __construct(array $data)
 	{

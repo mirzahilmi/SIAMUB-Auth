@@ -140,7 +140,7 @@ class SIAMUBAuth
      * @param string $regex The XPath expression.
      * @return DOMNode|null The extracted content.
      */
-    private static function extractContent(string $content, string $regex): DOMNode
+    private static function extractContent(string $content, string $regex)
     {
         // Suppress document warnings
         libxml_use_internal_errors(true);

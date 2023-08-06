@@ -1,24 +1,24 @@
 <?php
 
-namespace MirzaHilmi;
+namespace SIAMUBAuth;
 
 require_once 'Config.php';
 
-use DOMDocument;
 use DOMNode;
 use DOMXPath;
 use Exception;
+use DOMDocument;
 use GuzzleHttp\Client;
-use MirzaHilmi\Models\Mahasiswa;
+use SIAMUBAuth\Models\Mahasiswa;
 
 /**
  * Class SIAMUBAuth
  *
  * The SIAMUBAuth class provides authentication and information retrieval functionalities for SIAM UB (Sistem Informasi Akademik Mahasiswa Universitas Brawijaya).
  *
- * @package MirzaHilmi
+ * @package SIAMUBAuth
  */
-class SIAMUBAuth
+class SIAMAuth
 {
     /**
      * @var Client The GuzzleHttp client instance.
@@ -30,9 +30,7 @@ class SIAMUBAuth
      *
      * Private constructor to prevent object creation with the "new" keyword.
      */
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
     /**
      * Authenticate the user with the given NIM and password.
@@ -93,16 +91,16 @@ class SIAMUBAuth
         }
 
         $res = self::$client->post(BASE_URI . '/index.php', [
-            'headers' => [
-                'Cookie' => $token,
+            'headers'     => [
+                'Cookie'       => $token,
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ],
             'form_params' => [
                 'username' => $nim,
                 'password' => $password,
-                'login' => 'Masuk',
+                'login'    => 'Masuk',
             ],
-            'timeout' => 15
+            'timeout'     => 15,
         ]);
         $content = trim($res->getBody()->getContents());
 
@@ -127,7 +125,9 @@ class SIAMUBAuth
         $datas = preg_split('/\s{2,}/', trim($contents->nodeValue));
         $photoNode = self::extractContent($body, PHOTO_XPATH);
 
-        if ($photoNode === null) return $datas;
+        if ($photoNode === null) {
+            return $datas;
+        }
 
         $datas[] = $photoNode->attributes->getNamedItem('style')->nodeValue;
         return $datas;
@@ -167,7 +167,7 @@ class SIAMUBAuth
     {
         self::$client->get(BASE_URI . '/logout.php', [
             'headers' => ['Cookie' => $token],
-            'timeout' => 15
+            'timeout' => 15,
         ]);
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace MirzaHilmi\Models;
+namespace SIAMUBAuth\Models;
 
 /**
  * Mahasiswa Class
- * 
+ *
  * @property string $pasFoto
  * @property string $nim
  * @property string $nama
@@ -49,7 +49,7 @@ class Mahasiswa
             preg_match('/url\((.*?)\)/', $raw[8], $match);
             $this->pasFoto = $match[1];
         } else {
-            $this->pasFoto = sprintf("https://siakad.ub.ac.id/dirfoto/foto/foto_20%s/%s.jpg", substr($this->nim, 0, 2), $this->nim);
+            $this->pasFoto = sprintf('https://siakad.ub.ac.id/dirfoto/foto/foto_20%s/%s.jpg', substr($this->nim, 0, 2), $this->nim);
         }
 
         $this->nama = $raw[1];

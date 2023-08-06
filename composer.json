@@ -9,24 +9,24 @@
     "FILKOM"
   ],
   "require": {
-    "php": ">=5.5.0",
+    "php": ">=7.3",
     "guzzlehttp/guzzle": ">=6.0"
   },
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "MirzaHilmi\\": "src/"
+      "SIAMUBAuth\\": "src/"
     }
   },
   "authors": [
     {
       "name": "Mirza Hilmi",
-      "email": "exquisitemirza@student.ub.ac.id"
+      "email": "exquisitemirza@gmail.com"
     }
   ],
   "minimum-stability": "dev",
   "support": {
-    "email": "exquisitemirza@student.ub.ac.id",
+    "email": "exquisitemirza@gmail.com",
     "issues": "https://github.com/MirzaHilmi/SIAMUB-Auth/issues",
     "source": "https://github.com/MirzaHilmi/SIAMUB-Auth",
     "docs": "https://github.com/MirzaHilmi/SIAMUB-Auth/wiki"

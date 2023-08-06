@@ -22,8 +22,7 @@ The SIAM UB Authentication project aims to retrieve information from the SIAM UB
 - [✅] Scrape user information, such as name, nim, department, profile picture and others, from the authenticated user profile.
 - [⬜] Retrieve course information, including course codes, names, and schedules. **Not supported yet.**
 
-## Requirements
-To run this project, you need to have the following requirements installed on your system:
+## Prerequisite
 - [PHP](https://www.php.net/): version 7.3 or higher
 - [Guzzle](https://docs.guzzlephp.org/en/stable/): version 6 or higher
 - [Composer](https://getcomposer.org/)

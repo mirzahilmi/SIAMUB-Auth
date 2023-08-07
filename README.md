@@ -41,7 +41,7 @@ use SIAMUBAuth\SIAMAuth;
 use GuzzleHttp\Client;
 
 $client = new Client();
-$user = SIAMUBAuth::authenticate('22515xxxxxxxxxx', 'xxxxxxxx', $client);
+$user = SIAMAuth::authenticate('22515xxxxxxxxxx', 'xxxxxxxx', $client);
 
 echo get_class($user); // SIAMUBAuth\Models\Mahasiswa
 ```

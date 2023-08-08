@@ -8,7 +8,7 @@ Please note that this project is intended solely for educational purposes and to
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
-- [Requirements](#requirements)
+- [Prerequisite](#prerequisite)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
